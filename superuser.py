@@ -5,8 +5,8 @@ from app.models import models
 from passlib.context import CryptContext
 
 # --- CONFIGURATION ---
-ADMIN_EMAIL = "shrutisharma2308@gmail.com"
-ADMIN_PASSWORD = "gungun1802"
+ADMIN_EMAIL = "admin@gmail.com"
+ADMIN_PASSWORD = "Adminpass"
 ADMIN_NAME = "Master Admin"
 # ---------------------
 
