@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment Variables & Secrets
+.env
+
+# Database Files
+campus_pulse.db
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE & Editor Settings (VS Code)
+.vscode/
+.idea/
+
+# Operating System Files
+.DS_Store
+Thumbs.db

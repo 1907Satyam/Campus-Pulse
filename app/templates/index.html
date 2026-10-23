@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Pulse | Premium College Fest</title>
+    
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        .skeleton {
+            background: linear-gradient(90deg, #222 25%, #333 50%, #222 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        .empty-state { text-align: center; padding: 3rem; grid-column: 1 / -1; color: #888; }
+        .empty-icon { font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.5; }
+
+        .hero { position: relative; overflow: hidden; background: transparent !important; }
+        .video-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -2; opacity: 0.4;
+        }
+        .hero::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), #0a0a0a); z-index: -1;
+        }
+        .btn-active { background: #d90429 !important; color: white !important; border-color: #d90429 !important; }
+    </style>
+</head>
+<body>
+
+    <nav data-aos="fade-down" data-aos-duration="1000">
+        <div class="logo">CAMPUS<span>PULSE</span></div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="#events">Events</a></li>
+            <li><a href="/login">Login</a></li>
+        </ul>
+        <a href="/complete-profile" class="btn btn-primary" style="width: auto; margin: 0; padding: 12px 30px; display: inline-block; transform: none;">Join Fest</a>
+    </nav>
+
+    <section class="hero" style="background: transparent !important; position: relative;">
+        <video class="video-bg" autoplay muted loop playsinline>
+            <source src="/static/BG_Vid.mp4" type="video/mp4">
+        </video>
+
+        <h1 data-aos="fade-up" data-aos-delay="200">Experience the <br><span>Grandeur</span></h1>
+        <p data-aos="fade-up" data-aos-delay="400">The ultimate college fest experience. Music, Tech, and Culture blended into one premium event.</p>
+        
+        <div style="display: flex; gap: 1rem;" data-aos="fade-up" data-aos-delay="600">
+            <a href="#events" class="btn btn-primary">Explore Events</a>
+        </div>
+    </section>
+
+    <div class="container" id="events">
+        <h2 style="margin-bottom: 2rem; font-size: 2rem;" data-aos="fade-right">Featured <span style="color: var(--sand);">Events</span></h2>
+        
+        <div id="category-filters" style="margin-bottom: 2rem; display: flex; gap: 10px; flex-wrap: wrap;" data-aos="fade-right" data-aos-delay="200">
+            <button onclick="filterEvents('all', this)" class="btn btn-outline btn-active" style="min-width: 80px; cursor: pointer;">All</button>
+        </div>
+
+        <div id="event-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;">
+            </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ once: true, offset: 100 });
+
+        let allEvents = [];
+
+        async function loadEvents() {
+            const grid = document.getElementById('event-grid');
+            
+            grid.innerHTML = Array(3).fill(0).map((_, i) => `
+                <div data-aos="fade-up" data-aos-delay="${i * 100}" style="height: 380px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333; overflow: hidden;">
+                    <div class="skeleton" style="height: 200px; width: 100%;"></div>
+                    <div style="padding: 1.5rem;">
+                        <div class="skeleton" style="height: 20px; width: 30%; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 25px; width: 80%; margin-bottom: 10px;"></div>
+                        <div class="skeleton" style="height: 40px; width: 100%;"></div>
+                    </div>
+                </div>
+            `).join('');
+
+            try {
+                await new Promise(r => setTimeout(r, 600)); 
+                const response = await fetch('/events/');
+                allEvents = await response.json();
+                generateCategoryButtons(allEvents);
+                renderEvents(allEvents);
+            } catch (error) {
+                console.error("Error loading events:", error);
+                grid.innerHTML = `<div class="empty-state"><span class="empty-icon">⚠️</span><p>Could not connect to server.</p></div>`;
+            }
+        }
+
+        function generateCategoryButtons(events) {
+            const filterContainer = document.getElementById('category-filters');
+            const uniqueCategories = [...new Set(events.map(e => e.category.toUpperCase()))];
+            uniqueCategories.forEach(cat => {
+                filterContainer.innerHTML += `
+                    <button onclick="filterEvents('${cat}', this)" class="btn btn-outline" style="min-width: 80px; cursor: pointer;">${cat}</button>
+                `;
+            });
+        }
+
+        function renderEvents(eventsToRender) {
+            const grid = document.getElementById('event-grid');
+            grid.innerHTML = ''; 
+            
+            if (eventsToRender.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" data-aos="zoom-in">
+                        <span class="empty-icon">👻</span>
+                        <h3>No events found.</h3>
+                        <p>Try selecting a different category.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            eventsToRender.forEach((event, index) => {
+                const date = new Date(event.date_time).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                grid.innerHTML += `
+                    <div data-aos="fade-up" data-aos-delay="${index * 100}" style="background: var(--dark-grey); border-radius: 8px; overflow: hidden; border: 1px solid rgba(179,143,111,0.1); transition: transform 0.2s;">
+                        <div style="height: 200px; background: #333; background-image: url('${event.image_url || "/static/default.jpg"}'); background-size: cover;"></div>
+                        <div style="padding: 1.5rem;">
+                            <span style="color: var(--sand); font-size: 0.8rem; text-transform: uppercase;">${event.category}</span>
+                            <h3 style="margin: 0.5rem 0;">${event.title}</h3>
+                            <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 1rem;">${date} • ${event.location}</p>
+                            <a href="/event-details?id=${event.id}" class="btn btn-outline" style="width: 100%; text-align: center; display: inline-block;">View Details</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterEvents(category, btnElement) {
+            const buttons = document.querySelectorAll('#category-filters button');
+            buttons.forEach(b => b.classList.remove('btn-active'));
+            if(btnElement) btnElement.classList.add('btn-active');
+
+            if (category === 'all') {
+                renderEvents(allEvents);
+            } else {
+                const filtered = allEvents.filter(e => e.category.toUpperCase() === category.toUpperCase());
+                renderEvents(filtered);
+            }
+        }
+
+        window.onload = loadEvents;
+    </script>
+</body>
+</html>

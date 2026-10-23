@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Campus Pulse | Signup</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        .auth-container {
+            min-height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: var(--dark-grey);
+            padding: 2.5rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(179, 143, 111, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--sand); font-size: 0.9rem; }
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--obsidian);
+            border: 1px solid #333;
+            color: white;
+            border-radius: 4px;
+            outline: none;
+        }
+        .form-group input:focus { border-color: var(--crimson); }
+        .error-msg { color: #ff4d4d; font-size: 0.8rem; margin-top: 1rem; display: none; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo"><a href="/" style="text-decoration:none; color:inherit;">CAMPUS<span>PULSE</span></a></div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2 style="margin-bottom: 0.5rem;">Create Account</h2>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 2rem;">Join the most elite campus fest.</p>
+            
+            <form id="signupForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="name" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="student@college.edu" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+                <div id="error" class="error-msg"></div>
+            </form>
+
+            <p style="margin-top: 1.5rem; font-size: 0.8rem; text-align: center; color: #888;">
+                Already have an account? <a href="/login" style="color: var(--sand); text-decoration: none;">Login</a>
+            </p>
+        </div>
+    </div>
+
+   <script>
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorDiv = document.getElementById('error');
+        errorDiv.style.display = 'none'; // Hide previous errors
+        
+        // 1. Get values from HTML
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+
+        // Safety check to ensure HTML IDs exist
+        if (!nameInput || !emailInput || !passInput) {
+            console.error("Critical Error: HTML IDs do not match script.");
+            return;
+        }
+
+        // 2. Prepare Data EXACTLY as 'UserCreate' in auth_routes.py expects it
+        const signupData = {
+            full_name: nameInput.value,  // Mapping 'name' input -> 'full_name' schema
+            email: emailInput.value,
+            password: passInput.value
+        };
+
+        try {
+            // 3. Send Request
+            const response = await fetch('/auth/signup', { 
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify(signupData)
+            });
+
+            // 4. Handle Response
+            const result = await response.json();
+
+            if (response.ok) {
+                // Success! Redirect to login
+                window.location.href = '/login'; 
+            } else {
+                // Server returned an error (like "Email already registered")
+                console.log("Server Error Details:", result);
+                errorDiv.textContent = result.detail || "Signup failed.";
+                errorDiv.style.display = 'block';
+            }
+        } catch (err) {
+            // Network or Server Crash error
+            console.error("Network/Script Error:", err);
+            errorDiv.textContent = "Connection error. Check your server terminal for python errors.";
+            errorDiv.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>

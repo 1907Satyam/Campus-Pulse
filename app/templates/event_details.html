@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Details | Campus Pulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #0a0a0a; color: white; font-family: 'Inter', sans-serif; }
+        .details-container { max-width: 800px; margin: 4rem auto; padding: 2rem; background: #111; border-radius: 12px; border: 1px solid #333; }
+        .event-header-img { width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #333; }
+        .meta-tag { display: inline-block; padding: 4px 12px; background: #d90429; color: white; font-size: 0.8rem; border-radius: 4px; margin-bottom: 1rem; font-weight: 700; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0; padding: 1.5rem 0; border-top: 1px solid #333; border-bottom: 1px solid #333; }
+        /* Changed from button style to link style for compatibility */
+        .btn-register { display: block; text-align: center; text-decoration: none; background: #d90429; color: white; border: none; padding: 15px 40px; font-weight: 800; cursor: pointer; border-radius: 4px; font-size: 1rem; width: 100%; transition: 0.2s; }
+        .btn-register:hover { background: #b00020; }
+    </style>
+</head>
+<body>
+
+    <nav style="padding: 1.5rem 3rem; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 800; font-size: 1.2rem;">CAMPUS<span style="color: #d90429;">PULSE</span></div>
+        <a href="/" style="color: white; text-decoration: none; opacity: 0.7;">&larr; Back to Events</a>
+    </nav>
+
+    <div class="container">
+        <div id="loading" style="text-align: center; margin-top: 5rem;">Loading event details...</div>
+
+        <div id="event-content" class="details-container" style="display: none;">
+            <img id="e-image" src="" alt="Event Poster" class="event-header-img">
+            <span id="e-category" class="meta-tag">CATEGORY</span>
+            <h1 id="e-title" style="font-size: 2.5rem; margin: 0.5rem 0;">Event Title</h1>
+            
+            <div class="info-grid">
+                <div><label style="color:#888;">Date</label><br><span id="e-date" style="font-weight:bold;">-</span></div>
+                <div><label style="color:#888;">Location</label><br><span id="e-location" style="font-weight:bold;">-</span></div>
+            </div>
+
+            <h3 style="margin-bottom: 1rem;">About</h3>
+            <p id="e-desc" style="color: #ccc; line-height: 1.6;">Description...</p>
+            
+            <div style="margin-top: 3rem;">
+                <a id="registerLink" href="#" class="btn-register">REGISTER NOW</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const eventId = params.get('id');
+
+        async function loadEventDetails() {
+            if (!eventId) return;
+            try {
+                const response = await fetch(`/events/${eventId}`);
+                if (!response.ok) throw new Error("Event not found");
+                const event = await response.json();
+
+                document.getElementById('e-image').src = event.image_url || "/static/default.jpg";
+                document.getElementById('e-category').innerText = event.category;
+                document.getElementById('e-title').innerText = event.title;
+                document.getElementById('e-location').innerText = event.location;
+                document.getElementById('e-desc').innerText = event.description;
+                document.getElementById('e-date').innerText = new Date(event.date_time).toLocaleString();
+
+                // UPDATE THE LINK HREF TO POINT TO THE NEW FILE
+                document.getElementById('registerLink').href = `/register-event/${eventId}`;
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('event-content').style.display = 'block';
+            } catch (err) {
+                document.getElementById('loading').innerText = "Error: " + err.message;
+            }
+        }
+
+        window.onload = loadEventDetails;
+    </script>
+</body>
+</html>

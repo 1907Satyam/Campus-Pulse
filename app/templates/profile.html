@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>My Profile</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .profile-container { max-width: 500px; margin: 5rem auto; background: #111; padding: 2rem; border-radius: 12px; border: 1px solid #333; color: white; }
+        input { width: 100%; padding: 10px; margin: 10px 0 20px 0; background: #222; border: 1px solid #444; color: white; }
+        label { color: #888; font-size: 0.9rem; }
+    </style>
+</head>
+<body style="background: #0a0a0a;">
+    <nav>
+        <div class="logo"><a href="/" style="color:white; text-decoration:none;">CAMPUS<span>PULSE</span></a></div>
+        <a href="/dashboard" style="color: #ccc; text-decoration: none;">Back to Dashboard</a>
+    </nav>
+
+    <div class="profile-container">
+        <h2>Edit Profile</h2>
+        {% if message %}<p style="color: green;">{{ message }}</p>{% endif %}
+        
+        <form method="POST">
+            <label>Full Name</label>
+            <input type="text" name="full_name" value="{{ user.full_name }}">
+            
+            <label>Email (Cannot change)</label>
+            <input type="text" value="{{ user.email }}" disabled style="opacity: 0.5;">
+            
+            <label>Mobile Number</label>
+            <input type="text" name="mobile" value="{{ user.mobile_number }}">
+            
+            <label>Branch</label>
+            <input type="text" name="branch" value="{{ user.branch }}">
+            
+            <button type="submit" class="btn btn-primary" style="width:100%;">Save Changes</button>
+        </form>
+    </div>
+</body>
+</html>

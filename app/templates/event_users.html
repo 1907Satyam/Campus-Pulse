@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Participants | {{ event.title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .table-container { overflow-x: auto; background: #111; border-radius: 8px; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        th { background: #1a1a1a; color: #888; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        tr:hover { background: #161616; }
+        
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .badge-solo { background: rgba(32, 201, 151, 0.2); color: #20c997; }
+        .badge-team { background: rgba(255, 170, 0, 0.2); color: #ffaa00; }
+        .badge-cat { background: #333; color: #ccc; border: 1px solid #444; }
+
+        .team-info { font-size: 0.8rem; color: #888; margin-top: 4px; }
+        .team-name { color: white; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">ADMIN<span>PANEL</span></div>
+        <ul class="nav-links">
+            <li><a href="/admin-dashboard">&larr; Back to Dashboard</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1 style="margin-bottom: 5px;">{{ event.title }}</h1>
+                <p style="opacity: 0.6;">Total Registrations: {{ registrations|length }}</p>
+            </div>
+            <button onclick="window.print()" class="btn btn-outline">Print List</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name</th>
+                        <th>Branch / Mobile</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Team Details</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in registrations %}
+                    <tr>
+                        <td style="color: #666;">{{ loop.index }}</td>
+                        
+                        <td>
+                            <div style="font-weight: 600;">{{ reg.student.full_name }}</div>
+                            <div style="font-size: 0.8rem; color: #666;">{{ reg.student.email }}</div>
+                        </td>
+                        
+                        <td>
+                            <div>{{ reg.student.branch }}</div>
+                            <div style="font-size: 0.8rem; color: #666;">{{ reg.student.mobile_number }}</div>
+                        </td>
+
+                        <td>
+                            {% if reg.participation_type == 'Solo' %}
+                                <span class="badge badge-solo">Solo</span>
+                            {% else %}
+                                <span class="badge badge-team">{{ reg.participation_type }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge badge-cat">{{ reg.participation_category }}</span>
+                        </td>
+
+                        <td>
+                            {% if reg.participation_type != 'Solo' %}
+                                <div class="team-name">{{ reg.team_name }}</div>
+                                <div class="team-info">
+                                    Members: {{ reg.team_members }}
+                                </div>
+                            {% else %}
+                                <span style="opacity: 0.2;">-</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if reg.student.is_blocked %}
+                                <a href="/admin/toggle-block/{{ reg.student.id }}" style="color: #ff4d4d; font-size: 0.8rem; font-weight: bold;">Unblock</a>
+                            {% else %}
+                                <a href="/admin/toggle-block/{{ reg.student.id }}" style="color: #666; font-size: 0.8rem;">Block</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: #666;">
+                            No registrations yet for this event.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

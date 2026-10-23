@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Dashboard | Campus Pulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        /* GLASSMORPHISM BACKGROUND */
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(circle at 10% 20%, rgba(217, 4, 41, 0.15) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(255, 170, 0, 0.1) 0%, transparent 20%);
+            background-attachment: fixed;
+            color: white; font-family: 'Inter', sans-serif;
+        }
+
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 3rem 5%; border-radius: 0 0 20px 20px; margin-bottom: 3rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: -5rem; padding: 0 5%; }
+        
+        .stat-card {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 1.5rem; border-radius: 16px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: rgba(217, 4, 41, 0.5); }
+
+        .event-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(30, 30, 30, 0.4);
+            backdrop-filter: blur(5px);
+            padding: 1.5rem; margin-bottom: 1rem; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #d90429;
+            transition: 0.2s;
+        }
+        .event-list-item:hover { background: rgba(40, 40, 40, 0.6); }
+
+        .btn-view { padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 6px; text-decoration: none; font-size: 0.8rem; transition: 0.2s; }
+        .btn-view:hover { background: white; color: black; }
+        
+        .btn-admin-scan {
+            background: #d90429; color: white; text-decoration: none; cursor: pointer;
+            padding: 10px 20px; border-radius: 30px; font-weight: bold;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(217, 4, 41, 0.4);
+            transition: 0.2s; border: none; font-size: 1rem;
+        }
+        .btn-admin-scan:hover { transform: scale(1.05); background: #ff1a1a; }
+
+        /* 3. ADDED: Scanner Modal Styles */
+        #scanner-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 2000;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        .scanner-box {
+            background: #1a1a1a; padding: 20px; border-radius: 12px;
+            width: 90%; max-width: 500px; text-align: center;
+            border: 1px solid #333; position: relative;
+        }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+        .close-btn {
+            margin-top: 15px; padding: 8px 20px; background: #333; color: white;
+            border: none; cursor: pointer; border-radius: 5px; font-weight: bold;
+        }
+        .close-btn:hover { background: #444; }
+    </style>
+</head>
+<body>
+
+    <nav style="backdrop-filter: blur(5px); background: rgba(0,0,0,0.5);">
+        <div class="logo"><a href="/" style="text-decoration:none; color:inherit;">CAMPUS<span>PULSE</span></a></div>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/profile">Edit Profile</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+
+    <header class="dashboard-header">
+        <div>
+            <h1>Welcome Back, {{ user.full_name }}</h1>
+            <p style="opacity: 0.6;">Ready for the next big event?</p>
+        </div>
+        
+        {% if user.is_admin %}
+        <div>
+            <button onclick="openScanner()" class="btn-admin-scan">
+                📷 Scan Tickets
+            </button>
+        </div>
+        {% endif %}
+    </header>
+
+    <div id="scanner-modal">
+        <div class="scanner-box">
+            <h3 style="color: white; margin: 0;">Scan Event Ticket</h3>
+            <div id="reader"></div>
+            <p id="scan-result" style="margin-top: 15px; color: #aaa; font-size: 0.9rem;">Point camera at QR Code</p>
+            <button class="close-btn" onclick="closeScanner()">Close Scanner</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3 style="color: #d90429; font-size: 2.5rem; margin: 0 0 5px 0;" id="reg-count">0</h3>
+            <p style="font-size: 0.8rem; opacity: 0.7; letter-spacing: 1px;">REGISTERED EVENTS</p>
+        </div>
+        <div class="stat-card">
+            <h3 style="color: white; font-size: 1.5rem; margin: 10px 0;">
+                {% if user.is_admin %} Admin Access {% else %} Student {% endif %}
+            </h3>
+            <p style="font-size: 0.8rem; opacity: 0.7; letter-spacing: 1px;">ACCOUNT STATUS</p>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 3rem;">
+        <h2 style="margin-bottom: 1.5rem; font-weight: 300; letter-spacing: -1px;">Your <span style="font-weight: 800;">Schedule</span></h2>
+        <div id="my-events">
+            <p style="opacity: 0.5;">Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        // --- 6. ADDED: Scanner Logic ---
+        let html5QrcodeScanner = null;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan result: ${decodedText}`, decodedResult);
+            // Show processing status
+            const resultText = document.getElementById('scan-result');
+            resultText.innerText = "Processing: " + decodedText;
+            resultText.style.color = "#FFC107"; // Yellow
+
+            // Pause scanning while processing
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.pause();
+            }
+
+            // Send to your verification API (Assuming /api/verify endpoint)
+            /* * Replace this fetch with your actual verification logic if different
+             */
+             /*
+            fetch('/api/verify', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ code: decodedText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultText.innerText = "✅ " + (data.message || "Valid Ticket");
+                resultText.style.color = "#4caf50";
+            })
+            .catch(err => {
+                resultText.innerText = "❌ Error verifying";
+                resultText.style.color = "#f44336";
+            })
+            .finally(() => {
+                // Resume scanning after 2 seconds
+                setTimeout(() => html5QrcodeScanner.resume(), 2000);
+            });
+            */
+            
+            // For now, just show success locally:
+            resultText.innerText = "✅ Scanned: " + decodedText;
+            resultText.style.color = "#4caf50";
+            
+            // Resume scanning after 2 seconds to scan the next person
+            setTimeout(() => {
+                if(html5QrcodeScanner) html5QrcodeScanner.resume();
+                resultText.innerText = "Point camera at QR Code";
+                resultText.style.color = "#aaa";
+            }, 3000);
+        }
+
+        function onScanFailure(error) {
+            // handle scan failure, usually better to ignore and keep scanning.
+        }
+
+        function openScanner() {
+            document.getElementById('scanner-modal').style.display = 'flex';
+            
+            // Initialize scanner only when modal opens
+            // We use html5-qrcode library logic here
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "reader", 
+                    { fps: 10, qrbox: 250 }
+                );
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            }
+        }
+
+        function closeScanner() {
+            document.getElementById('scanner-modal').style.display = 'none';
+            // We can clear it to stop the camera completely when closed
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear().then(() => {
+                    html5QrcodeScanner = null; // Reset so it re-initializes next time
+                }).catch(error => {
+                    console.error("Failed to clear html5QrcodeScanner. ", error);
+                });
+            }
+        }
+        // -------------------------------
+
+
+        // --- EXISTING DASHBOARD LOGIC ---
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === '1') {
+            setTimeout(() => {
+                var duration = 3 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+                var interval = setInterval(function() {
+                    var timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) { return clearInterval(interval); }
+                    var particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+                }, 250);
+                
+                window.history.replaceState({}, document.title, "/dashboard");
+            }, 500);
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/my-registrations');
+                if (!response.ok) throw new Error("Server Error");
+                const events = await response.json();
+                
+                const container = document.getElementById('my-events');
+                document.getElementById('reg-count').innerText = events.length;
+                container.innerHTML = '';
+
+                if (events.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; padding: 2rem; opacity:0.5;"><p>No events found.</p></div>`;
+                    return;
+                }
+
+                events.forEach(event => {
+                    const dateStr = new Date(event.date_time).toLocaleDateString();
+                    container.innerHTML += `
+                        <div class="event-list-item">
+                            <div>
+                                <h4 style="margin: 0 0 5px 0; font-size: 1.1rem;">${event.title}</h4>
+                                <p style="font-size: 0.85rem; color: #aaa;">${event.location} • ${dateStr}</p>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <a href="/ticket/${event.id}" target="_blank" class="btn-view" style="background: rgba(217, 4, 41, 0.8); border:none;">Download Ticket 🎟️</a>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        async function logout() {
+            document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            window.location.href = '/login';
+        }
+        window.onload = loadDashboard;
+    </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register Event | Campus Pulse</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0a0a0a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .reg-container { width: 100%; max-width: 500px; background: #111; padding: 2rem; border-radius: 12px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { margin-top: 0; color: #d90429; }
+        label { display: block; margin-top: 15px; color: #888; font-size: 0.9rem; margin-bottom: 5px; }
+        select, input, textarea { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; outline: none; transition: 0.2s; }
+        select:focus, input:focus, textarea:focus { border-color: #d90429; background: #2a2a2a; }
+        .hidden { display: none; }
+        .btn-submit { width: 100%; padding: 15px; background: #d90429; color: white; border: none; font-weight: bold; margin-top: 2rem; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background: #b00020; }
+        .event-summary { background: rgba(217, 4, 41, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 3px solid #d90429; }
+    </style>
+</head>
+<body>
+
+    <div class="reg-container">
+        <h2>Event Registration</h2>
+        <div class="event-summary">
+            <strong style="font-size: 1.1rem;">{{ event.title }}</strong><br>
+            <span style="font-size: 0.8rem; opacity: 0.7;">{{ event.date_time.strftime('%d %b, %Y') }} • {{ event.location }}</span>
+        </div>
+
+        {% if error %}
+            <div style="color: #ff4d4d; background: rgba(255, 77, 77, 0.1); padding: 10px; margin-bottom: 15px; border-radius: 4px;">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/register-event/{{ event.id }}">
+            
+            <label>Performance Category</label>
+            <select name="participation_category" required>
+                <option value="" disabled selected>Select a Category</option>
+                <option value="Dance">Dance</option>
+                <option value="Song">Song / Music</option>
+                <option value="Skit">Drama / Skit</option>
+                <option value="Poetry">Poetry / Storytelling</option>
+                <option value="Fashion">Fashion Show</option>
+                <option value="Tech">Technical / Coding</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label>Participation Type</label>
+            <select name="participation_type" id="typeSelect" onchange="toggleFields()" required>
+                <option value="Solo">Solo</option>
+                <option value="Duo">Duo (2 Members)</option>
+                <option value="Group">Group (3+ Members)</option>
+            </select>
+
+            <div id="teamFields" class="hidden">
+                <label>Group / Team Name</label>
+                <input type="text" name="team_name" placeholder="e.g. The Rockstars">
+
+                <label>Team Members (Names)</label>
+                <textarea name="team_members" rows="3" placeholder="Enter full names separated by commas&#10;e.g. Rahul, Priya, Amit"></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">CONFIRM REGISTRATION</button>
+            <a href="/event-details?id={{ event.id }}" style="display:block; text-align:center; margin-top:15px; color:#666; text-decoration:none; font-size:0.9rem;">Cancel</a>
+        </form>
+    </div>
+
+    <script>
+        function toggleFields() {
+            const type = document.getElementById('typeSelect').value;
+            const teamSection = document.getElementById('teamFields');
+            const nameInput = document.getElementsByName('team_name')[0];
+            const membersInput = document.getElementsByName('team_members')[0];
+            
+            if (type === 'Duo' || type === 'Group') {
+                teamSection.style.display = 'block';
+                // Remove hidden class if present
+                teamSection.classList.remove('hidden');
+                
+                // Make required
+                nameInput.required = true;
+                membersInput.required = true;
+            } else {
+                teamSection.style.display = 'none';
+                
+                // Remove required
+                nameInput.required = false;
+                membersInput.required = false;
+                
+                // Clear inputs
+                nameInput.value = "";
+                membersInput.value = "";
+            }
+        }
+    </script>
+</body>
+</html>

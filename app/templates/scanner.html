@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gatekeeper | Campus Pulse</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <style>
+        :root {
+            --neon-red: #d90429;
+            --neon-green: #00ff9d;
+            --dark-bg: #050505;
+        }
+        body {
+            background: var(--dark-bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0; padding: 20px; box-sizing: border-box;
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h3 {
+            margin: 0; font-weight: 900; font-size: 1.5rem;
+            text-transform: uppercase; letter-spacing: 3px;
+            color: var(--neon-red);
+            text-shadow: 0 0 15px rgba(217, 4, 41, 0.5);
+        }
+
+        /* --- SCANNER VIEWFINDER --- */
+        .scanner-wrapper {
+            position: relative;
+            width: 100%; max-width: 400px;
+            aspect-ratio: 1/1;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 3px solid var(--neon-red);
+            box-shadow: 0 0 30px rgba(217, 4, 41, 0.3);
+            display: flex; align-items: center; justify-content: center;
+        }
+        #reader { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- BUTTONS --- */
+        .btn-scan {
+            margin-top: 30px; padding: 15px 50px;
+            background: var(--neon-red); color: white;
+            border: none; border-radius: 50px;
+            font-size: 1.2rem; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 2px; cursor: pointer;
+            box-shadow: 0 0 25px rgba(217, 4, 41, 0.6);
+            transition: all 0.3s ease;
+        }
+        .btn-scan:hover { transform: scale(1.05); }
+
+        /* --- POPUP --- */
+        .result-box {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            width: 85%; max-width: 350px;
+            padding: 30px;
+            background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(20px);
+            border-radius: 30px; border: 1px solid #333;
+            text-align: center;
+            opacity: 0; pointer-events: none; transition: all 0.3s;
+            z-index: 100;
+        }
+        .result-box.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
+        .status-icon { font-size: 4rem; display: block; margin-bottom: 10px; }
+        
+        .success { border-color: var(--neon-green); box-shadow: 0 0 40px rgba(0, 255, 157, 0.3); }
+        .success .status-icon { color: var(--neon-green); }
+        .success h2 { color: var(--neon-green); margin: 0; text-transform: uppercase; }
+        
+        .error { border-color: var(--neon-red); box-shadow: 0 0 40px rgba(217, 4, 41, 0.3); }
+        .error .status-icon { color: var(--neon-red); }
+        .error h2 { color: var(--neon-red); margin: 0; text-transform: uppercase; }
+
+        .scan-count-badge {
+            display: inline-block; padding: 5px 15px; background: #222;
+            border-radius: 20px; margin-top: 15px; color: #aaa; font-weight: bold;
+        }
+
+        /* Debug Log for troubleshooting */
+        #debug-log { margin-top: 20px; color: #ff4d4d; font-size: 0.8rem; text-align: center; max-width: 90%; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h3>GATE KEEPER</h3>
+        <p style="color:#666; font-size:0.9rem;">Admin Scanner</p>
+    </div>
+
+    <div class="scanner-wrapper">
+        <div id="reader"></div>
+    </div>
+
+    <button onclick="initCamera()" class="btn-scan" id="startBtn">START CAMERA</button>
+    
+    <div id="debug-log"></div>
+
+    <div id="result" class="result-box">
+        <span class="status-icon" id="icon"></span>
+        <h2 id="msg-title"></h2>
+        <p id="msg-detail" style="color:#ccc; margin: 10px 0;"></p>
+        <div class="scan-count-badge">Scans: <span id="scan-count-val">0</span></div>
+    </div>
+
+    <script>
+        let html5QrCode;
+        let isScanning = false;
+        const debugDiv = document.getElementById('debug-log');
+
+        function logError(msg) {
+            console.error(msg);
+            debugDiv.innerText = "⚠️ " + msg;
+        }
+
+        async function initCamera() {
+            document.getElementById('startBtn').style.display = 'none';
+            debugDiv.innerText = "Starting camera...";
+
+            try {
+                // 1. Get list of cameras
+                const devices = await Html5Qrcode.getCameras();
+                
+                if (devices && devices.length) {
+                    // 2. Simply pick the first camera available
+                    const cameraId = devices[0].id;
+                    
+                    html5QrCode = new Html5Qrcode("reader");
+                    
+                    await html5QrCode.start(
+                        cameraId, 
+                        {
+                            fps: 20,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        onScanSuccess,
+                        (errorMessage) => { 
+                            // scanning... ignore frame errors
+                        }
+                    );
+                    debugDiv.innerText = ""; // Clear "Starting..." message if success
+                } else {
+                    logError("No cameras found on this device.");
+                    document.getElementById('startBtn').style.display = 'block';
+                }
+            } catch (err) {
+                logError("Camera Error: " + err);
+                document.getElementById('startBtn').style.display = 'block';
+            }
+        }
+
+        async function onScanSuccess(decodedText, decodedResult) {
+            if (isScanning) return;
+            isScanning = true;
+            
+            // Pause visually
+            try { await html5QrCode.pause(); } catch(e){}
+
+            // Send to Backend
+            try {
+                const response = await fetch('/api/scan-ticket', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_id: decodedText })
+                });
+                const data = await response.json();
+                showResult(response.ok, data);
+            } catch (err) {
+                showResult(false, { message: "Network Error" });
+            }
+
+            // Resume after 3 seconds
+            setTimeout(async () => {
+                document.getElementById('result').classList.remove('active');
+                try { await html5QrCode.resume(); } catch(e){}
+                isScanning = false;
+            }, 3000);
+        }
+
+        function showResult(isSuccess, data) {
+            const box = document.getElementById('result');
+            box.className = 'result-box ' + (isSuccess ? 'success' : 'error');
+            
+            document.getElementById('icon').innerText = isSuccess ? "✅" : "🚫";
+            document.getElementById('msg-title').innerText = isSuccess ? "Verified" : "Declined";
+            document.getElementById('msg-detail').innerText = data.message;
+            document.getElementById('scan-count-val').innerText = data.scan_count || 0;
+            
+            box.classList.add('active');
+        }
+    </script>
+</body>
+</html>

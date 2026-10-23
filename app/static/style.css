@@ -1,0 +1,238 @@
+/* --- Campus Pulse Premium: Unified Luxe Dark Theme --- */
+:root {
+    --crimson: #710014;
+    --sand: #B38F6F;
+    --pearl: #F2F1ED;
+    --obsidian: #0D0D0D;      /* Deeper black for high-end feel */
+    --dark-grey: #161616;
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(179, 143, 111, 0.2);
+    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* Global Font Lock - Inter Only */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: var(--obsidian);
+    color: var(--pearl);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Glassmorphism Navigation */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 8%;
+    background: rgba(13, 13, 13, 0.85);
+    backdrop-filter: blur(15px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.logo {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--pearl);
+    text-transform: uppercase;
+    letter-spacing: 5px;
+}
+
+.logo span {
+    color: var(--crimson);
+    font-weight: 400;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 3rem;
+    align-items: center; /* Ensures button aligns with text links */
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--pearl);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.7;
+    transition: var(--transition);
+}
+
+.nav-links a:hover {
+    color: var(--crimson);
+    opacity: 1;
+}
+
+/* --- Highlighted Glass Form Fields --- */
+.input-group {
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.input-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--sand);
+    display: block;
+    margin-bottom: 12px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 1.2rem;
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 15px !important;
+    color: var(--pearl) !important;
+    font-size: 0.95rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.form-input:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--crimson) !important;
+    box-shadow: 0 0 20px rgba(113, 0, 20, 0.3);
+}
+
+/* Pretty Date Picker Indicator */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8) sepia(1) saturate(3) hue-rotate(320deg);
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+/* File Upload Highlight */
+input[type="file"]::file-selector-button {
+    background: var(--sand);
+    color: var(--obsidian);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    margin-right: 15px;
+    cursor: pointer;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    transition: var(--transition);
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: var(--pearl);
+}
+
+/* --- Premium Pill Button (The "Pretty" Button) --- */
+.btn-primary {
+    display: block;
+    width: 100%;
+    padding: 1.3rem;
+    background: var(--crimson);
+    color: var(--pearl);
+    border-radius: 100px; /* Perfect Pill Shape */
+    font-weight: 800;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 10px 30px rgba(113, 0, 20, 0.3);
+    margin-top: 2rem;
+}
+
+.btn-primary:hover {
+    background: #8e001a;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(113, 0, 20, 0.5);
+}
+
+/* [NEW] Override for Navbar Button to stop stretching */
+nav .btn-primary {
+    width: auto;             /* Adjusts width to text */
+    display: inline-block;   
+    margin-top: 0;           /* Removes the big top margin */
+    padding: 0.8rem 2rem;    /* Smaller padding for navbar */
+    font-size: 0.75rem;     
+    box-shadow: none;        /* Optional: cleaner look for nav */
+}
+
+nav .btn-primary:hover {
+    box-shadow: 0 5px 15px rgba(113, 0, 20, 0.4);
+}
+
+
+/* Hero Section Refinement */
+.hero {
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(rgba(13, 13, 13, 0.8), rgba(13, 13, 13, 0.8)), 
+                url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=1600');
+    background-size: cover;
+    background-position: center;
+}
+
+.hero h1 {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    margin-bottom: 2rem;
+}
+
+.hero p {
+    color: var(--sand);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    max-width: 500px;
+    opacity: 0.8;
+}
+
+/* --- Admin Grid Layout Fixed --- */
+.admin-card {
+    background: var(--dark-grey);
+    padding: 3rem;
+    border-radius: 40px;
+    border: 1px solid var(--glass-border);
+    
+    /* [NEW] Size Constraints */
+    max-width: 500px;    /* Matches the login card width */
+    margin: 5% auto;     /* Centers vertically and horizontally */
+    width: 90%;          /* Responsive on mobile */
+}
+
+.event-item {
+    background: var(--glass-bg);
+    padding: 1.5rem 2rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.event-item:hover {
+    border-color: var(--crimson);
+    transform: translateX(10px);
+}

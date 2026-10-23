@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Event | Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">ADMIN<span>PORTAL</span></div>
+        <div class="nav-links">
+            <a href="/admin-dashboard">Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="hero" style="height: auto; padding: 100px 0;">
+        <div class="admin-card">
+            <h2 style="margin-bottom: 30px; color: var(--crimson);">EDIT EVENT</h2>
+            
+            <form action="/admin/edit-event/{{ event.id }}" method="POST">
+                <div class="input-group">
+                    <label class="input-label">Event Title</label>
+                    <input type="text" name="title" class="form-input" value="{{ event.title }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Description</label>
+                    <textarea name="description" class="form-input" rows="4" required>{{ event.description }}</textarea>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Category</label>
+                    <input type="text" name="category" class="form-input" value="{{ event.category }}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Location</label>
+                    <input type="text" name="location" class="form-input" value="{{ event.location }}" required>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Image URL</label>
+                    <input type="text" name="image_url" class="form-input" value="{{ event.image_url }}" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Date & Time</label>
+                    <input type="datetime-local" name="date_time" class="form-input" 
+                           value="{{ event.date_time.strftime('%Y-%m-%dT%H:%M') }}" required>
+                </div>
+
+                <button type="submit" class="btn-primary">UPDATE EVENT</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | Campus Pulse</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* DASHBOARD SPECIFIC LAYOUT */
+        body { background-color: #050505; padding-bottom: 50px; }
+        
+        .dash-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 4%; background: rgba(10, 10, 10, 0.9);
+            border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 100;
+        }
+        .dash-title { font-size: 1.2rem; font-weight: 800; letter-spacing: 2px; color: white; }
+        .dash-title span { color: var(--crimson); }
+        
+        .action-btn {
+            background: #222; color: white; padding: 10px 20px;
+            border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600;
+            border: 1px solid #333; transition: all 0.3s;
+        }
+        .action-btn:hover { border-color: var(--crimson); color: var(--crimson); }
+        .btn-scan-trigger { background: var(--crimson); border-color: var(--crimson); }
+        .btn-scan-trigger:hover { background: #ff0f2f; color: white; }
+
+        .dashboard-grid {
+            display: grid; grid-template-columns: 2fr 1.2fr; gap: 30px;
+            padding: 30px 4%; max-width: 1600px; margin: 0 auto;
+        }
+
+        .section-title {
+            color: #666; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+            margin-bottom: 15px; border-left: 3px solid var(--crimson); padding-left: 10px;
+        }
+
+        .stats-card {
+            background: #0f0f0f; border: 1px solid #222; border-radius: 16px;
+            padding: 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-around;
+        }
+        .chart-container { width: 120px; height: 120px; position: relative; }
+        .stat-text h4 { margin: 0; font-size: 2.5rem; color: white; font-weight: 800; }
+        .stat-text p { margin: 0; color: #666; font-size: 0.9rem; }
+
+        .event-list { display: flex; flex-direction: column; gap: 15px; }
+        .event-card-item {
+            background: #0f0f0f; border: 1px solid #222; border-radius: 12px;
+            padding: 20px; display: flex; justify-content: space-between; align-items: center;
+            transition: transform 0.2s;
+        }
+        .event-card-item:hover { transform: translateX(5px); border-color: #444; }
+        
+        .ev-info h4 { margin: 0 0 5px 0; color: white; font-size: 1.1rem; }
+        .ev-info span { font-size: 0.8rem; color: #888; background: #1a1a1a; padding: 4px 10px; border-radius: 4px; }
+        
+        .ev-actions { display: flex; gap: 10px; }
+        .btn-icon {
+            width: 35px; height: 35px; border-radius: 8px; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+            text-decoration: none;
+        }
+        .btn-edit { background: #222; color: #ccc; }
+        .btn-edit:hover { background: white; color: black; }
+        .btn-users { background: #111; color: var(--crimson); border: 1px solid #333; }
+
+        .form-panel {
+            background: #111; border: 1px solid #222; border-radius: 20px;
+            padding: 30px; position: sticky; top: 100px;
+        }
+        .form-panel h3 { margin-top: 0; color: white; font-size: 1.2rem; margin-bottom: 20px; }
+
+        .compact-group { margin-bottom: 15px; }
+        .compact-label { display: block; color: #888; font-size: 0.75rem; margin-bottom: 8px; font-weight: 600; }
+        .compact-input {
+            width: 100%; background: #050505; border: 1px solid #333; padding: 12px;
+            border-radius: 8px; color: white; font-size: 0.9rem; font-family: 'Inter', sans-serif;
+        }
+        .compact-input:focus { border-color: var(--crimson); outline: none; }
+        
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-create {
+            width: 100%; padding: 15px; background: var(--crimson); color: white;
+            border: none; border-radius: 8px; font-weight: 800; letter-spacing: 1px;
+            margin-top: 10px; cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .form-panel { position: relative; top: 0; order: -1; }
+        }
+    </style>
+</head>
+<body>
+    <header class="dash-header">
+        <div class="dash-title">ADMIN<span>PORTAL</span></div>
+        <div style="display: flex; gap: 15px;">
+            <a href="/scanner" class="action-btn btn-scan-trigger">📷 SCAN TICKETS</a>
+            <a href="/" class="action-btn">View Site</a>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <div class="left-col">
+            <div class="section-title">Overview</div>
+            <div class="stats-card">
+                <div class="stat-text">
+                    <h4 id="total-registrations">0</h4>
+                    <p>Total Registrations</p>
+                </div>
+                <div class="chart-container"><canvas id="miniChart"></canvas></div>
+            </div>
+
+            <div class="section-title">Live Events</div>
+            <div class="event-list">
+                {% for event in events %}
+                <div class="event-card-item">
+                    <div class="ev-info">
+                        <h4>{{ event.title }}</h4>
+                        <span>{{ event.category }}</span>
+                        <span style="margin-left: 10px;">📅 {{ event.date_time.strftime('%d %b') if event.date_time else 'N/A' }}</span>
+                    </div>
+                    <div class="ev-actions">
+                        <a href="/admin/edit-event/{{ event.id }}" class="btn-icon btn-edit" title="Edit">✏️</a>
+                        <a href="/admin/event/{{ event.id }}/users" class="btn-icon btn-users" title="View Registrations">👥</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="right-col">
+            <div class="form-panel">
+                <h3>+ Create New Event</h3>
+                
+                <form action="/admin/create-event" method="POST" enctype="multipart/form-data">
+                    <div class="compact-group">
+                        <label class="compact-label">EVENT TITLE</label>
+                        <input type="text" name="title" class="compact-input" placeholder="e.g. Hackathon 2026" required>
+                    </div>
+                    <div class="compact-group">
+                        <label class="compact-label">DESCRIPTION</label>
+                        <textarea name="description" class="compact-input" rows="3" required></textarea>
+                    </div>
+                    <div class="row-2">
+                        <div class="compact-group">
+                            <label class="compact-label">CATEGORY</label>
+                            <input type="text" name="category" class="compact-input" placeholder="Tech / Cultural">
+                        </div>
+                        <div class="compact-group">
+                            <label class="compact-label">DATE & TIME</label>
+                            <input type="datetime-local" name="date_time" class="compact-input" required>
+                        </div>
+                    </div>
+                    <div class="compact-group">
+                        <label class="compact-label">VENUE</label>
+                        <input type="text" name="location" class="compact-input" placeholder="Auditorium" required>
+                    </div>
+                    
+                    <div class="compact-group">
+                        <label class="compact-label">EVENT POSTERS / VIDEO</label>
+                        <input type="file" name="files" class="compact-input" multiple accept="image/*,video/*" required>
+                        <small style="color:#666; font-size:0.75rem;">First image selected will be the main poster.</small>
+                    </div>
+
+                    <button type="submit" class="btn-create">PUBLISH EVENT</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        fetch('/api/admin/stats').then(res => res.json()).then(data => {
+            let total = 0;
+            const labels = [];
+            const counts = [];
+            data.forEach(item => {
+                total += item.count;
+                labels.push(item.label);
+                counts.push(item.count);
+            });
+            document.getElementById('total-registrations').innerText = total;
+            new Chart(document.getElementById('miniChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: ['#d90429', '#2b2d42', '#8d99ae'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { cutout: '70%', plugins: { legend: { display: false } } }
+            });
+        });
+    </script>
+</body>
+</html>

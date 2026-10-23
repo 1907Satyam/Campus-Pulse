@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Pass | {{ event.title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Space+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #0a0a0a; 
+            color: white; 
+            font-family: 'Inter', sans-serif;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+        .ticket {
+            display: flex; 
+            background: rgb(198, 71, 71); 
+            color: black; 
+            border-radius: 16px; 
+            overflow: hidden;
+            width: 700px; 
+            height: 250px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .left {
+            flex: 2; 
+            padding: 2rem; 
+            border-right: 2px dashed #ccc; 
+            position: relative;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+        }
+        /* Perforated circles */
+        .left::after {
+            content: ""; 
+            position: absolute; 
+            top: -10px; 
+            right: -10px; 
+            width: 20px; 
+            height: 20px;
+            background: #0a0a0a; 
+            border-radius: 50%;
+        }
+        .left::before {
+            content: ""; 
+            position: absolute; 
+            bottom: -10px; 
+            right: -10px; 
+            width: 20px; 
+            height: 20px;
+            background: #0a0a0a; 
+            border-radius: 50%;
+        }
+        .right {
+            flex: 1; 
+            padding: 1.5rem; 
+            background: #eee; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            text-align: center;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 1.8rem; 
+            color: #fcf8f8; 
+            text-transform: uppercase; 
+        }
+        .info-label { 
+            font-size: 0.7rem; 
+            color: #302f2f; 
+            text-transform: uppercase; 
+            margin-bottom: 2px; 
+        }
+        .info-value { 
+            font-size: 1rem; 
+            font-weight: 800; 
+            margin-bottom: 15px; 
+        }
+        
+        /* UPDATED QR CODE STYLE */
+      .qr-code { 
+    width: 120px; 
+    height: 120px;
+    
+    /* 1. Reset: Ensure no weird blending happens */
+    mix-blend-mode: normal !important;
+    background-color: transparent;
+
+    /* 2. The Fix: 
+       - grayscale: Turns Red to Dark Grey
+       - brightness(1000%): Forces that Dark Grey to become Pure White (Black stays Black)
+       - invert: Swaps them so Data is Black and Background is White 
+       - contrast: Sharpens the final result
+    */
+    filter: grayscale(100%) brightness(1000%) invert(100%) contrast(200%);
+    
+    padding: 4px;
+}
+        .ticket-id { 
+            font-family: 'Space Mono', monospace; 
+            font-size: 0.8rem; 
+            color: #323131; 
+            margin-top: 10px; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ticket">
+        <div class="left">
+            <div>
+                <span class="info-label">EVENT PASS</span>
+                <h1>{{ event.title }}</h1>
+            </div>
+            
+            <div style="display: flex; gap: 30px;">
+                <div>
+                    <div class="info-label">ATTENDEE</div>
+                    <div class="info-value">{{ user.full_name }}</div>
+                </div>
+                <div>
+                    <div class="info-label">DATE & TIME</div>
+                    <div class="info-value">{{ event.date_time.strftime('%b %d • %I:%M %p') }}</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="info-label">LOCATION</div>
+                <div class="info-value">{{ event.location }}</div>
+            </div>
+        </div>
+
+        <div class="right">
+            <img src="/generate-qr/{{ reg_id }}" class="qr-code" alt="QR Code">
+            <div class="ticket-id">{{ reg_id }}</div>
+            <div class="info-label" style="margin-top: 5px;">SCAN AT ENTRY</div>
+        </div>
+    </div>
+
+</body>
+</html>
